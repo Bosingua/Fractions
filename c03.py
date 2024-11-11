@@ -120,19 +120,21 @@ class Fraction():
     @staticmethod
     def create_from_string(string : str):
         if not isinstance(string, str): raise TypeError("Input must be a string")
-        valid_string_patten = compile(r'^[0-9]+$|^[0-9]+.$|^[0-9]+.[0-9]*(\([0-9]*\))?$')
-        if fullmatch(compile(r'^[0-9]+$'), string): return int(string)
-        if fullmatch(compile(r'^[0-9]+.$'), string): return int(string[:-1])
-        if fullmatch(compile(r'^[0-9]+.[0-9]+$'), string):
+        if fullmatch(compile(r'^\d+$'), string): return int(string)
+        if fullmatch(compile(r'^\d+.$'), string): return int(string[:-1])
+        if fullmatch(compile(r'^\d+.\d+$'), string):
             index_dot = string.find('.')
             string_len = len(string)
             return Fraction(int(string.replace('.','')), 10 ** (string_len - index_dot - 1))
-        if fullmatch(compile(r'^[0-9]+.[0-9]*\([0-9]*\)$'), string):
-            raise KeyError
+        if fullmatch(compile(r'^\d+.\d*\(\d*\)$'), string):
+            n1 = string.find('(') - string.find('.') - 1
+            n2 = len(string) - string.find('(') - 2
+            n3 = int(string.translate(str.maketrans('', '', '().')))
+            n4 = int(string.replace('.','')[:string.find('(')-1])
+            return Fraction(n3 - n4, int(f'{"9"*n2}{"0"*n1}'))
         raise TypeError
 
-
-    def asStringOfNumbers(self, nPrec: int = 32) -> str:
+    def as_string_of_numbers(self, nPrec: int = 32) -> str:
         if not isinstance(nPrec , int): return TypeError
         l_s , rest= [f'{self.num // self.den}.'] , self.num % self.den
         rests_list , count = [] , 0
@@ -151,36 +153,3 @@ class Fraction():
     def __float__(self) -> float: return self.num / self.den
 
     def __int__ (self) -> int: return int(self.__float__())
-
-    def asStringOfNumbers2(self, nPrec: int = 32) -> str:
-        if not isinstance(nPrec , int): return TypeError
-        l_s , rest= [f'{self.num // self.den}.'] , self.num % self.den
-        count = 0
-        while rest != 0 and count < nPrec:
-            rest *= 10
-            l_s.append(str(rest // self.den))
-            rest %= self.den
-            count += 1
-        return f'{''.join(l_s)}...' if count == nPrec else ''.join(l_s)
-
-# class Pippo(int):
-#     def __truediv__(self, other):
-#         if not isinstance(other, int): return super().__truediv__(other)
-#         return Fraction(self, other)
-
-if __name__ == '__main__':
-    # a = Pippo(17)
-    # a += 1
-    # b = Pippo(13)
-    # aa = a/b
-    # print(aa.asStringOfNumbers())
-    aa = Fraction(13, 7)
-    print(aa.asStringOfNumbers(4))
-    print(aa.__hash__())
-    aa = Fraction(-8,10)
-    print(aa)
-    print(hash(aa))
-    print(hash((-8,10)))
-    # print(aa is (-8,10))
-    aa = Fraction.create_from_string("1.(857142)")
-    print(int(aa))
